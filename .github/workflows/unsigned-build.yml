@@ -1,0 +1,22 @@
+name: unsigned-ios-build
+on:
+  push:
+    branches: [feat/cafari-lite-parked-prototype]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Safety invariants
+        run: python3 scripts/check_source.py
+  ios-compile:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build unsigned iOS Simulator target
+        run: |
+          xcodebuild -project CafariLite.xcodeproj -scheme CafariLite -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
