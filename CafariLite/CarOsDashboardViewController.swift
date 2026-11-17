@@ -18,15 +18,41 @@ private struct CarOsShortcut: Codable {
   ]
 }
 
+private enum CarOsTheme: String, CaseIterable {
+  case noche, oceano, bosque, grafito
+
+  var title: String {
+    switch self {
+    case .noche: return "Noche"
+    case .oceano: return "Océano"
+    case .bosque: return "Bosque"
+    case .grafito: return "Grafito"
+    }
+  }
+
+  var background: UIColor {
+    switch self {
+    case .noche: return UIColor(red: 0.045, green: 0.075, blue: 0.13, alpha: 1)
+    case .oceano: return UIColor(red: 0.035, green: 0.15, blue: 0.24, alpha: 1)
+    case .bosque: return UIColor(red: 0.04, green: 0.16, blue: 0.15, alpha: 1)
+    case .grafito: return UIColor(red: 0.09, green: 0.10, blue: 0.12, alpha: 1)
+    }
+  }
+}
+
 final class CarOsDashboardViewController: UIViewController,
     UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
   private let storageKey = "caros.shortcuts.v1"
+  private let themeKey = "caros.theme.v1"
+  private var theme: CarOsTheme {
+    CarOsTheme(rawValue: UserDefaults.standard.string(forKey: themeKey) ?? "") ?? .noche
+  }
   private var shortcuts = CarOsShortcut.defaults
   private var collectionView: UICollectionView!
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = UIColor(red: 0.045, green: 0.075, blue: 0.13, alpha: 1)
+    view.backgroundColor = theme.background
     navigationItem.title = "CarOs"
     navigationController?.navigationBar.prefersLargeTitles = true
     navigationController?.navigationBar.tintColor = .white
@@ -34,6 +60,11 @@ final class CarOsDashboardViewController: UIViewController,
     navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
     navigationItem.rightBarButtonItem = UIBarButtonItem(
       barButtonSystemItem: .add, target: self, action: #selector(addShortcut))
+    navigationItem.leftBarButtonItems = [
+      UIBarButtonItem(title: "Vídeos", style: .plain, target: self,
+                      action: #selector(openVideoLibrary)),
+      UIBarButtonItem(title: "Personalizar", menu: makePersonalizeMenu())
+    ]
 
     if let data = UserDefaults.standard.data(forKey: storageKey),
        let decoded = try? JSONDecoder().decode([CarOsShortcut].self, from: data) {
@@ -41,7 +72,7 @@ final class CarOsDashboardViewController: UIViewController,
     }
 
     let caption = UILabel()
-    caption.text = "Mi escritorio · Mantén pulsado un icono para editarlo o moverlo"
+    caption.text = "Mi escritorio · Mantén pulsado un icono para editarlo o moverlo.\nLos accesos abren webs o apps en el iPhone; no sustituyen CarPlay."
     caption.textColor = UIColor(red: 0.65, green: 0.73, blue: 0.85, alpha: 1)
     caption.font = .preferredFont(forTextStyle: .subheadline)
     caption.numberOfLines = 0
@@ -70,6 +101,40 @@ final class CarOsDashboardViewController: UIViewController,
       collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
     ])
+  }
+
+  @objc private func openVideoLibrary() {
+    navigationController?.pushViewController(CarOsVideoLibraryViewController(), animated: true)
+  }
+
+  private func makePersonalizeMenu() -> UIMenu {
+    let palettes = CarOsTheme.allCases.map { palette in
+      UIAction(title: palette.title,
+               image: UIImage(systemName: palette == theme ? "checkmark.circle.fill" : "circle")) { [weak self] _ in
+        guard let self = self else { return }
+        UserDefaults.standard.set(palette.rawValue, forKey: self.themeKey)
+        self.view.backgroundColor = palette.background
+        self.navigationItem.leftBarButtonItems?[1].menu = self.makePersonalizeMenu()
+      }
+    }
+    let restore = UIAction(title: "Restablecer accesos predeterminados",
+                           image: UIImage(systemName: "arrow.counterclockwise"),
+                           attributes: .destructive) { [weak self] _ in
+      self?.confirmReset()
+    }
+    return UIMenu(children: [UIMenu(title: "Color del escritorio", children: palettes), restore])
+  }
+
+  private func confirmReset() {
+    let alert = UIAlertController(title: "Restablecer escritorio",
+                                  message: "Se eliminarán los accesos personalizados y el orden guardado.",
+                                  preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+    alert.addAction(UIAlertAction(title: "Restablecer", style: .destructive) { [weak self] _ in
+      self?.shortcuts = CarOsShortcut.defaults
+      self?.saveAndRefresh()
+    })
+    present(alert, animated: true)
   }
 
   private func saveAndRefresh() {
