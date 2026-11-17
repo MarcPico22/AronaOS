@@ -33,6 +33,7 @@ security cms -D -i "$profile" > "$profile_plist"
 # Validate the distribution profile and get only non-secret metadata.
 python3 - "$profile_plist" "$working/profile.env" <<'PY'
 import plistlib
+import shlex
 import sys
 from pathlib import Path
 profile = plistlib.loads(Path(sys.argv[1]).read_bytes())
@@ -49,9 +50,9 @@ uuid = profile["UUID"]
 assert all("\n" not in value and "\r" not in value for value in (team[0], name, uuid))
 assert profile.get("ExpirationDate"), "Missing expiry"
 with Path(sys.argv[2]).open("w") as output:
-    output.write(f"TEAM_ID={team[0]}\n")
-    output.write(f"PROFILE_NAME={name}\n")
-    output.write(f"PROFILE_UUID={uuid}\n")
+    output.write(f"TEAM_ID={shlex.quote(team[0])}\n")
+    output.write(f"PROFILE_NAME={shlex.quote(name)}\n")
+    output.write(f"PROFILE_UUID={shlex.quote(uuid)}\n")
 print("Distribution profile validated for CarOs with Video-only entitlement")
 PY
 # Controlled metadata from a signed Apple provisioning profile.
