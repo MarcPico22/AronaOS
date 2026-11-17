@@ -1,20 +1,42 @@
-"""Conservative source checks; not a substitute for signing/road-safety tests."""
+"""CarOs static security and architecture checks; simulator/hardware QA still required."""
 from pathlib import Path
 import plistlib
 
-gate = Path("CafariLite/CarGate.swift").read_text()
-browser = Path("CafariLite/BrowserViewController.swift").read_text()
-settings = Path("CafariLite/Settings.swift").read_text()
+source = Path("CafariLite")
+car = (source / "CarPlaySceneDelegate.swift").read_text()
+browser = (source / "BrowserViewController.swift").read_text()
+dashboard = (source / "CarOsDashboardViewController.swift").read_text()
+library = (source / "CarOsVideoLibrary.swift").read_text()
+player_ui = (source / "CarOsVideoLibraryViewController.swift").read_text()
 signing = Path("Signing.xcconfig").read_text()
+
 with Path("CarPlay.entitlements").open("rb") as file:
     entitlements = plistlib.load(file)
-keys = [key for key in entitlements if key.startswith("com.apple.developer.carplay-")]
-assert keys == ["com.apple.developer.carplay-video"], f"Must use video-only entitlement, got: {keys}"
-assert entitlements["com.apple.developer.carplay-video"] is True
-assert "private(set) var isMoving = true" in gate, "GPS gate must default blocked"
-assert "setBlocked(true)" in gate and "checkFreshness()" in gate
-assert "playOnlyWhenParked" not in browser + settings, "No motion bypass allowed"
-assert "if CarGate.shared.isMoving" in browser
-assert "carPendingURL = url" in browser
-assert "\nCAFARI_LITE_ENTITLEMENTS =\n" in signing, "Entitlements should be off by default"
-print("Static safety and video-only signing invariants passed; car capability unverified.")
+keys = [k for k in entitlements if k.startswith("com.apple.developer.carplay-")]
+assert keys == ["com.apple.developer.carplay-video"], f"video-only required, got {keys}"
+assert entitlements[keys[0]] is True
+assert "\nCAFARI_LITE_ENTITLEMENTS =\n" in signing, "Entitlements must be off by default"
+
+with Path("Info.plist").open("rb") as file:
+    info = plistlib.load(file)
+assert info["CFBundleDisplayName"] == "CarOs"
+config = info["UIApplicationSceneManifest"]["UISceneConfigurations"]["UIWindowSceneSessionRoleCarPlay"][0]
+assert config["UISceneClassName"] == "CPTemplateApplicationScene", "No custom car UIKit window"
+assert config["UISceneDelegateClassName"].endswith(".CarPlaySceneDelegate")
+
+assert "CPTemplateApplicationSceneDelegate" in car
+assert "CPGridTemplate" in car and "CPListTemplate" in car
+assert "supportsVideoPlayback" in car and "#available(iOS 27.0" in car
+assert "UIWindow(" not in car and "WKWebView" not in car, "No custom car overlays"
+assert "CarOsVideoLibrary.items" in car
+assert "CarOsVideoPlayback.shared.play" in car
+assert "CarOsVideoPlayback.shared.stop" in car
+assert "AVRoutePickerView" in player_ui and "AVPlayerViewController" in player_ui
+assert "components.scheme?.lowercased() == \"https\"" in library
+assert 'path.hasSuffix(".m3u8")' in library and 'path.hasSuffix(".mp4")' in library
+assert "allowsExternalPlayback = true" in library
+assert "CarOsDashboardViewController" in (source / "SceneDelegate.swift").read_text()
+assert "CarOsVideoLibraryViewController" in dashboard
+assert "caros.shortcuts.v1" in dashboard and "caros.theme.v1" in dashboard
+assert "showCarPlayInformation" in browser and '#selector(sendToCar)' not in browser
+print("CarOs checks passed: official CarPlay templates, video-only capability, HTTPS media links and local dashboard.")
