@@ -15,7 +15,7 @@ En iPhone, CarOs abre una cuadrícula de accesos predeterminados: YouTube, TikTo
 
 ## Vídeos directos y AirPlay — implementado a nivel de código, QA pendiente
 
-En **Vídeos** del iPhone, la primera apertura incluye un ejemplo HLS público de Apple para pruebas (se puede eliminar). También puedes añadir, editar, reproducir o eliminar vídeos propios con URL directa HTTPS terminada en `.mp4`, `.mov` o `.m3u8`. La pantalla de reproducción usa `AVPlayerViewController`, `AVPlayer.allowsExternalPlayback = true` y el selector nativo `AVRoutePickerView` para elegir salida compatible.
+En **Vídeos** del iPhone, la primera apertura incluye un ejemplo HLS público de Apple para pruebas (se puede eliminar). También puedes añadir, editar, reproducir o eliminar vídeos propios con URL directa HTTPS terminada en `.mp4`, `.mov` o `.m3u8`. La pantalla de reproducción usa `AVPlayerViewController`, una capa nativa `AVPlayerLayer`, sesión `.moviePlayback`, controles Now Playing, `AVPlayer.allowsExternalPlayback = true` y el selector nativo `AVRoutePickerView` para elegir salida compatible.
 
 Esto **no** reproduce por arte de magia un enlace web de YouTube/TikTok/Movistar Plus+ ni elude DRM, suscripciones o protecciones de contenidos. No recopila claves ni contraseñas.
 
@@ -25,7 +25,7 @@ El antiguo `UIWindowScene` personalizado de Cafari Lite se ha reemplazado por la
 
 - `CPTemplateApplicationScene` con `CPTemplateApplicationSceneDelegate` y su rol correcto en `Info.plist`.
 - `CPGridTemplate` para la entrada a **Mis vídeos** y a **Compatibilidad**.
-- `CPListTemplate` para explorar los vídeos directos gestionados desde el iPhone.
+- `CPListTemplate` para explorar vídeos directos y fichas de reproducción con `CPListTemplateDetailsHeader` y `CPPlaybackConfiguration(preferredPresentation: .video)`.
 - `CPSessionConfiguration.supportsVideoPlayback` (iOS 27+) para comprobar si el coche anuncia la capacidad de vídeo; no se falsea.
 - `AVPlayer` preparado para salida externa/AirPlay; **falta certificar** en un CarPlay compatible que el audio y vídeo se enrutan y se presentan de forma correcta. No se declara reproducción real exitosa.
 - Solo `com.apple.developer.carplay-video`, sin permiso de CarPlay Audio.
@@ -36,7 +36,7 @@ El antiguo `UIWindowScene` personalizado de Cafari Lite se ha reemplazado por la
 ## Estado de publicación
 
 - PR de trabajo: [#1](https://github.com/MarcPico22/AronaOS/pull/1) (Draft).
-- CI: `.github/workflows/unsigned-build.yml` compila en Xcode 27 con pruebas estáticas.
+- Requisito mínimo del proyecto iOS: iOS 27. CI: `.github/workflows/unsigned-build.yml` compila en Xcode 27 con pruebas estáticas.
 - Firma: `main` incluye un workflow **manual** de archivo IPA App Store firmado. Solo usa GitHub Actions Secrets y está fijado a un commit auditado. **No sube automáticamente a TestFlight ni publica en App Store**.
 - El usuario tiene autorizado el CarPlay Video App entitlement según el correo de Apple y ha generado el perfil de distribución para `com.marcpico.aronaos`. La comprobación local del P12/perfil dio todos los resultados esperados.
 - Ningún secreto, P12, perfil de provisión ni contraseña debe entrar al repositorio público.
