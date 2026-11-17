@@ -1,50 +1,127 @@
-// Cafari Lite -- the small, open part of Cafari: a web view on the CarPlay
-// screen, and nothing else. The full app, which also casts to Chromecast and
-// AirPlay receivers, and its sideload builds, are at
-// https://github.com/rPlayAI/cafari-public
-//
-// The car window. A UIWindowScene on the head unit -- the plain window role,
-// not a CarPlay template scene -- so anything UIKit can draw, including a web
-// view, appears on the car screen and takes touches from it.
-
+// CarOs CarPlay scene using the OFFICIAL CarPlay templates API.
+// Video-only category. The old WKWebView-in-a-UIWindowScene hack is not used.
+// In-car video requires a compatible vehicle, iOS 27+, AirPlay, and parked
+// state enforcement by Apple/vehicle. We never simulate or bypass Park.
+import CarPlay
 import UIKit
 
-final class CarPlaySceneDelegate: UIResponder, UIWindowSceneDelegate {
-  var window: UIWindow?
+final class CarPlaySceneDelegate: UIResponder,
+                                  CPTemplateApplicationSceneDelegate,
+                                  CPSessionConfigurationDelegate {
+  private var interfaceController: CPInterfaceController?
+  private var sessionConfiguration: CPSessionConfiguration?
+  private var observer: NSObjectProtocol?
 
-  func scene(
-    _ scene: UIScene,
-    willConnectTo session: UISceneSession,
-    options connectionOptions: UIScene.ConnectionOptions
-  ) {
-    Log.write("car scene willConnect role=\(session.role.rawValue)")
-    guard let windowScene = scene as? UIWindowScene else { return }
-    let window = UIWindow(windowScene: windowScene)
-    // The car screen is the one being watched, so it gets no status line and
-    // no chrome it does not need.
-    window.rootViewController = BrowserViewController(showsStatus: false)
-    window.makeKeyAndVisible()
-    self.window = window
+  func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
+                                didConnect interfaceController: CPInterfaceController) {
+    self.interfaceController = interfaceController
+    self.sessionConfiguration = CPSessionConfiguration(delegate: self)
+    Log.write("CarOs official template scene connected")
     NotificationCenter.default.post(name: .cafariLiteCarConnected, object: nil)
+
+    observer = NotificationCenter.default.addObserver(
+      forName: CarOsVideoLibrary.changed, object: nil, queue: .main) { [weak self] _ in
+      self?.showHome()
+    }
+    showHome()
   }
 
-  func sceneDidDisconnect(_ scene: UIScene) {
-    window = nil
+  func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
+                                didDisconnect interfaceController: CPInterfaceController) {
+    if let observer = observer {
+      NotificationCenter.default.removeObserver(observer)
+      self.observer = nil
+    }
+    self.interfaceController = nil
+    self.sessionConfiguration = nil
+    CarOsVideoPlayback.shared.stop()
+    Log.write("CarOs CarPlay template scene disconnected")
     NotificationCenter.default.post(name: .cafariLiteCarDisconnected, object: nil)
+  }
+
+  func sessionConfiguration(_ sessionConfiguration: CPSessionConfiguration,
+                            contentStyleChanged contentStyle: CPContentStyle) {
+    // CarPlay owns all colors/layout; no custom driver-facing windows.
+  }
+
+  private var isVideoCapable: Bool {
+    if #available(iOS 27.0, *) {
+      return sessionConfiguration?.supportsVideoPlayback ?? false
+    }
+    return false
+  }
+
+  private func showHome() {
+    guard let controller = interfaceController else { return }
+
+    // A grid of video-only actions. CarPlay never runs TikTok/Movistar+ or
+    // arbitrary third-party iPhone apps from these tiles.
+    let library = CPGridButton(
+      titleVariants: ["Mis vídeos"],
+      image: UIImage(systemName: "play.rectangle.fill")!) { [weak self] _ in
+        self?.showVideoList()
+      }
+    let info = CPGridButton(
+      titleVariants: ["Compatibilidad"],
+      image: UIImage(systemName: "car.side.fill")!) { [weak self] _ in
+        self?.showCompatibility()
+      }
+    let home = CPGridTemplate(title: "CarOs", gridButtons: [library, info])
+    controller.setRootTemplate(home, animated: false, completion: nil)
+  }
+
+  private func showVideoList() {
+    guard let controller = interfaceController else { return }
+    let videoItems: [CPListItem]
+    if !isVideoCapable {
+      videoItems = [
+        CPListItem(text: "Vídeo no disponible",
+                   detailText: "Este coche o esta sesión no admite la función de vídeo.")
+      ]
+    } else if CarOsVideoLibrary.items.isEmpty {
+      videoItems = [
+        CPListItem(text: "Tu biblioteca está vacía",
+                   detailText: "Añade vídeos MP4 o HLS desde el iPhone, en CarOs.")
+      ]
+    } else {
+      videoItems = Array(CarOsVideoLibrary.items.prefix(20)).map { video in
+        let item = CPListItem(text: video.title, detailText: "Vídeo · AirPlay, solo en coches compatibles")
+        item.handler = { [weak self] _, completion in
+          if self?.isVideoCapable == true {
+            _ = CarOsVideoPlayback.shared.play(video)
+          }
+          completion()
+        }
+        return item
+      }
+    }
+    let section = CPListSection(items: videoItems)
+    let list = CPListTemplate(title: "Mis vídeos", sections: [section])
+    controller.pushTemplate(list, animated: true, completion: nil)
+  }
+
+  private func showCompatibility() {
+    guard let controller = interfaceController else { return }
+    let status = isVideoCapable
+      ? "CarPlay declara que el coche admite vídeo."
+      : "Vídeo no compatible o no disponible en esta conexión."
+    let items = [
+      CPListItem(text: "Estado de CarPlay", detailText: status),
+      CPListItem(text: "Reproducción", detailText: "AirPlay requiere un receptor y vehículo compatibles."),
+      CPListItem(text: "Seguridad", detailText: "El coche y CarPlay limitan el vídeo al estacionamiento."),
+      CPListItem(text: "Accesos externos", detailText: "TikTok, IA y Movistar+ se gestionan en el iPhone.")
+    ]
+    let list = CPListTemplate(title: "Compatibilidad", sections: [CPListSection(items: items)])
+    controller.pushTemplate(list, animated: true, completion: nil)
   }
 }
 
-// UIKit does not surface this scene role in Swift -- there is no
-// UISceneSession.Role.carPlay -- so it is compared as the raw string, which is
-// the same one the Info.plist scene manifest uses.
+// Apple's CarPlay scene session role remains this raw role name.
 let cafariLiteCarPlayRole = UISceneSession.Role(rawValue: "UIWindowSceneSessionRoleCarPlay")
 
 extension Notification.Name {
   static let cafariLiteCarConnected = Notification.Name("CafariLiteCarConnected")
   static let cafariLiteCarDisconnected = Notification.Name("CafariLiteCarDisconnected")
-  /// Posted by the phone window when a sign-in finished, so the car window can
-  /// reload and pick up the shared session.
   static let cafariLiteAccountChanged = Notification.Name("CafariLiteAccountChanged")
-  /// Posted by the phone window to hand the page it is showing to the car.
   static let cafariLiteSendToCar = Notification.Name("CafariLiteSendToCar")
 }
