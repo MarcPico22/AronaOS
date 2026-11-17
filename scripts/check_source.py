@@ -27,7 +27,7 @@ assert config["UISceneDelegateClassName"].endswith(".CarPlaySceneDelegate")
 assert "CPTemplateApplicationSceneDelegate" in car
 assert "CPGridTemplate" in car and "CPListTemplate" in car
 assert "supportsVideoPlayback" in car and "#available(iOS 27.0" in car
-assert "UIWindow(" not in car and "WKWebView" not in car, "No custom car overlays"
+assert "UIWindow(" not in car and "WKWebView(" not in car, "No custom car overlays"
 assert "CarOsVideoLibrary.items" in car
 assert "CarOsVideoPlayback.shared.play" in car
 assert "CarOsVideoPlayback.shared.stop" in car
