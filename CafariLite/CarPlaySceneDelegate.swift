@@ -10,7 +10,6 @@ final class CarPlaySceneDelegate: UIResponder,
                                   CPSessionConfigurationDelegate {
   private var interfaceController: CPInterfaceController?
   private var sessionConfiguration: CPSessionConfiguration?
-  private var observer: NSObjectProtocol?
 
   func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
                                 didConnect interfaceController: CPInterfaceController) {
@@ -19,19 +18,11 @@ final class CarPlaySceneDelegate: UIResponder,
     Log.write("CarOs official template scene connected")
     NotificationCenter.default.post(name: .cafariLiteCarConnected, object: nil)
 
-    observer = NotificationCenter.default.addObserver(
-      forName: CarOsVideoLibrary.changed, object: nil, queue: .main) { [weak self] _ in
-      self?.showHome()
-    }
     showHome()
   }
 
   func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
                                 didDisconnect interfaceController: CPInterfaceController) {
-    if let observer = observer {
-      NotificationCenter.default.removeObserver(observer)
-      self.observer = nil
-    }
     self.interfaceController = nil
     self.sessionConfiguration = nil
     CarOsVideoPlayback.shared.stop()
@@ -87,9 +78,7 @@ final class CarPlaySceneDelegate: UIResponder,
       videoItems = Array(CarOsVideoLibrary.items.prefix(20)).map { video in
         let item = CPListItem(text: video.title, detailText: "Vídeo · AirPlay, solo en coches compatibles")
         item.handler = { [weak self] _, completion in
-          if self?.isVideoCapable == true {
-            _ = CarOsVideoPlayback.shared.play(video)
-          }
+          self?.showVideoDetail(video)
           completion()
         }
         return item
@@ -98,6 +87,34 @@ final class CarPlaySceneDelegate: UIResponder,
     let section = CPListSection(items: videoItems)
     let list = CPListTemplate(title: "Mis vídeos", sections: [section])
     controller.pushTemplate(list, animated: true, completion: nil)
+  }
+
+  private func showVideoDetail(_ video: CarOsVideo) {
+    guard isVideoCapable, let controller = interfaceController else { return }
+    let play = CPButton(image: UIImage(systemName: "play.fill")!) { [weak self] _ in
+      guard self?.isVideoCapable == true else { return }
+      _ = CarOsVideoPlayback.shared.play(video)
+    }
+    let thumbnail = CPThumbnailImage(image: UIImage(systemName: "play.rectangle.fill")!)
+    let header = CPListTemplateDetailsHeader(
+      thumbnail: thumbnail, title: video.title,
+      subtitle: "Vídeo HTTPS · AirPlay · coche estacionado",
+      actionButtons: [play])
+    if #available(iOS 26.4, *) {
+      header.playbackConfiguration = CPPlaybackConfiguration(
+        preferredPresentation: .video,
+        playbackAction: .play,
+        elapsedTime: .zero,
+        duration: .zero)
+    }
+
+    let info = CPListItem(
+      text: "Reproducción mediante CarPlay",
+      detailText: "Apple y el vehículo controlan cuándo mostrar vídeo.")
+    let detail = CPListTemplate(
+      title: video.title, sections: [CPListSection(items: [info])])
+    detail.listHeader = header
+    controller.pushTemplate(detail, animated: true, completion: nil)
   }
 
   private func showCompatibility() {
