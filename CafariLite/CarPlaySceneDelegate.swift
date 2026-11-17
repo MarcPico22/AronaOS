@@ -116,8 +116,8 @@ final class CarPlaySceneDelegate: UIResponder,
   }
 }
 
-// Apple's CarPlay scene session role remains this raw role name.
-let cafariLiteCarPlayRole = UISceneSession.Role(rawValue: "UIWindowSceneSessionRoleCarPlay")
+// Official CarPlay template scene session role from Apple's Info.plist specification.
+let cafariLiteCarPlayRole = UISceneSession.Role(rawValue: "CPTemplateApplicationSceneSessionRoleApplication")
 
 extension Notification.Name {
   static let cafariLiteCarConnected = Notification.Name("CafariLiteCarConnected")
