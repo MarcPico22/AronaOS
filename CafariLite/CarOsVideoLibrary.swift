@@ -24,8 +24,13 @@ enum CarOsVideoLibrary {
 
   static var items: [CarOsVideo] {
     get {
-      guard let data = UserDefaults.standard.data(forKey: storageKey),
-            let videos = try? JSONDecoder().decode([CarOsVideo].self, from: data) else {
+      // First launch only: a publicly documented Apple HLS sample for QA.
+      // Once edited/deleted, the user's library is the single source of truth.
+      guard let data = UserDefaults.standard.data(forKey: storageKey) else {
+        return [CarOsVideo(title: "Prueba HLS · Apple",
+                           address: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8")]
+      }
+      guard let videos = try? JSONDecoder().decode([CarOsVideo].self, from: data) else {
         return []
       }
       return videos.filter { $0.mediaURL != nil }
