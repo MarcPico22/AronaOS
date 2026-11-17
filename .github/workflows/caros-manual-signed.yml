@@ -11,14 +11,15 @@ concurrency:
 
 jobs:
   signed-ipa:
-    # Manual run only. Do not expose any secrets to PR-triggered workflows.
+    # Manual run only. The source is pinned to an inspected commit; change only after review.
+    # Do not expose any secrets to PR-triggered workflows.
     runs-on: xcode-27
     timeout-minutes: 45
     steps:
       - name: Checkout reviewed CarOs prototype branch
         uses: actions/checkout@v4
         with:
-          ref: feat/cafari-lite-parked-prototype
+          ref: 70eb23438d8e91d4d62879c770bb51606456cf9b
           persist-credentials: false
 
       - name: Print reviewed source commit and check safety invariants
