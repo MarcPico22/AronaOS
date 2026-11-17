@@ -140,9 +140,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate {
       // Hand whatever the phone is showing to the car window. The car cannot
       // be typed into, so finding something is the phone's job and this is how
       // the result gets across.
-      let cast = button("tv", #selector(sendToCar))
-      cast.accessibilityLabel = "Send to car screen"
-      container.addArrangedSubview(cast)
+      let help = button("info.circle", #selector(showCarPlayInformation))
+      help.accessibilityLabel = "Información sobre CarPlay"
+      container.addArrangedSubview(help)
       let gear = button("gearshape", #selector(showSettings))
       gear.accessibilityLabel = "Settings"
       container.addArrangedSubview(gear)
@@ -197,20 +197,13 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate {
     present(sheet, animated: true)
   }
 
-  @objc private func sendToCar() {
-    guard let url = webView.url else { return }
-    // Cafari sends the car a VIDEO, not a page. Do the same: when the phone is
-    // on a YouTube video, hand the car the bare player for that video instead
-    // of the whole site. The car window then holds nothing but the picture, at
-    // the panel's own size, with no page layout to crop it.
-    let destination = Self.playerURL(for: url) ?? url
-    Log.write("sendToCar \(url.absoluteString) -> \(destination.absoluteString)")
-    NotificationCenter.default.post(
-      name: .cafariLiteSendToCar, object: nil, userInfo: ["url": destination])
-    let connected = UIApplication.shared.connectedScenes.contains { scene in
-      scene.session.role == cafariLiteCarPlayRole
-    }
-    statusLabel?.text = connected ? "Sent to the car" : "No car screen to send to"
+  @objc private func showCarPlayInformation() {
+    let alert = UIAlertController(
+      title: "CarOs y CarPlay",
+      message: "Este navegador es para el iPhone. CarPlay no admite abrir automáticamente cualquier página web. Para vídeo en coches compatibles, añade un enlace directo MP4/HLS en «Mis vídeos» y utiliza AirPlay. La reproducción depende del vehículo y solo debe utilizarse cuando esté permitido por el sistema.",
+      preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "Entendido", style: .default))
+    present(alert, animated: true)
   }
 
   /// The bare player for a YouTube link, or nil if this is not one. Handles
