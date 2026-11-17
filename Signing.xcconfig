@@ -1,0 +1,10 @@
+// Default remains phone-only until matching App ID and profile are configured.
+// Local.xcconfig is git-ignored and can override these values.
+CAFARI_LITE_BUNDLE_ID = com.marcpico.aronaos
+CAFARI_LITE_TEAM =
+
+// Once Apple Developer App ID has CarPlay Video enabled and a matching
+// provisioning profile exists, Local.xcconfig may set CarPlay.entitlements.
+// Video ONLY; never mix with com.apple.developer.carplay-audio.
+CAFARI_LITE_ENTITLEMENTS =
+#include? "Local.xcconfig"

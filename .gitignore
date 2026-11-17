@@ -1,0 +1,13 @@
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+Local.xcconfig
+
+# Personal signing values and local tools
+Local.xcconfig
+*.p12
+*.mobileprovision
+*.p8
+.DS_Store
