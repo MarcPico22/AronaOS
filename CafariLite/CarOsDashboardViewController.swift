@@ -53,6 +53,7 @@ final class CarOsDashboardViewController: UIViewController,
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = theme.background
+    CarOsVideoPlayback.shared.attachVideoOutput(to: view)
     navigationItem.title = "CarOs"
     navigationController?.navigationBar.prefersLargeTitles = true
     navigationController?.navigationBar.tintColor = .white
