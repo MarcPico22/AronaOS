@@ -11,7 +11,7 @@ import UIKit
 import WebKit
 
 final class BrowserViewController: UIViewController, WKNavigationDelegate {
-  private let home = URL(string: "https://m.youtube.com")!
+  private let home: URL
   private let showsStatus: Bool
   private var webView: WKWebView!
   private var statusLabel: UILabel?
@@ -22,8 +22,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate {
   private var drivingCover: UIView?
   private var carPendingURL = URL(string: "https://m.youtube.com")!
 
-  init(showsStatus: Bool) {
+  init(showsStatus: Bool, initialURL: URL? = nil) {
     self.showsStatus = showsStatus
+    self.home = initialURL ?? URL(string: "https://m.youtube.com")!
     super.init(nibName: nil, bundle: nil)
   }
 
