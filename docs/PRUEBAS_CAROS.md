@@ -12,7 +12,7 @@ La interfaz de iPhone y el flujo de CarPlay Video están implementados a nivel d
 
 ## B. Vídeos en iPhone
 
-1. Entrar en Vídeos y añadir URL directa HTTPS a un MP4, MOV o M3U8 propio/autorizado.
+1. Entrar en Vídeos: en la primera instalación debe existir «Prueba HLS · Apple» (muestra pública de Apple). También se pueden añadir MP4, MOV o M3U8 directos propios/autorizados.
 2. Asegurar rechazo de webs, HTTP y enlaces sin extensión de vídeo.
 3. Reproducir usando el reproductor nativo AVPlayer.
 4. Pulsar selector AirPlay; verificar solo receptores anunciados por el sistema.
@@ -24,7 +24,7 @@ La interfaz de iPhone y el flujo de CarPlay Video están implementados a nivel d
 1. Instalar las Additional Tools de Xcode 27 que incluyen el simulador CarPlay y habilitar un receptor que soporte vídeo.
 2. Verificar que CarOs aparece como app de vídeo cuando el simulador anuncia compatibilidad.
 3. Abrir CarOs; deben mostrarse las plantillas del sistema: una cuadrícula con Mis vídeos y Compatibilidad.
-4. Verificar que la pantalla de compatibilidad responde al dato real supportsVideoPlayback.
+4. Verificar que la pantalla de compatibilidad responde al dato real supportsVideoPlayback y que cada vídeo tiene ficha y botón con configuración de presentación de vídeo.
 5. Seleccionar un vídeo MP4/HLS y verificar imagen/sonido mediante AirPlay. Este extremo NO ha sido certificado E2E.
 6. Simular indisponibilidad del vídeo; no saltarse los controles del sistema.
 
