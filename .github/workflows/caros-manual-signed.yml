@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   signed-ipa:
-    # Manual run only. The source is pinned to an inspected commit; change only after review.
+    # Manual run only. Source is pinned to an Xcode-27 CI-passing reviewed commit; change only after review.
     # Do not expose any secrets to PR-triggered workflows.
     runs-on: xcode-27
     timeout-minutes: 45
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout reviewed CarOs prototype branch
         uses: actions/checkout@v4
         with:
-          ref: 70eb23438d8e91d4d62879c770bb51606456cf9b
+          ref: 1c1a08628b1e42e37b68fe16a116ac73d4d61b60
           persist-credentials: false
 
       - name: Print reviewed source commit and check safety invariants
