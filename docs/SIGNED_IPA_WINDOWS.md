@@ -6,7 +6,7 @@ Certificado y perfil comprobados localmente (según resultado del usuario): Appl
 
 La app actual es **experimental**. Este flujo prepara una IPA firmada y **NO** la sube a TestFlight. La compatibilidad del SEAT Arona con vídeo sigue sin comprobarse; no usar vídeo con el vehículo en marcha.
 
-La ejecución manual está definida en el branch `main`, y compila el código de `feat/cafari-lite-parked-prototype`. El workflow utiliza el runner oficial `xcode-27`.
+La ejecución manual está definida en el branch `main` y compila el commit revisado y fijado `70eb23438d8e91d4d62879c770bb51606456cf9b` de la rama `feat/cafari-lite-parked-prototype`. Los cambios posteriores en esa rama **no se firman automáticamente**. El workflow utiliza el runner oficial `xcode-27`.
 
 ## Paso 1 — GitHub: crear tres Secrets
 
@@ -50,7 +50,7 @@ Set-Clipboard -Value ""
 
 1. Abre https://github.com/MarcPico22/AronaOS/actions/workflows/caros-manual-signed.yml
 2. Pulsa **Run workflow**. La workflow vive en `main`; mantén `main` seleccionado como fuente del workflow.
-3. El job compilará exclusivamente la rama `feat/cafari-lite-parked-prototype` con Xcode 27.
+3. El job compilará únicamente el commit fijado `70eb234` de CarOs con Xcode 27.
 4. Revisará la firma y que la única categoría CarPlay sea Video.
 5. Si todo funciona, generará un artifact llamado **CarOs-signed-not-uploaded**. Retención: **1 día**. No lo sube a App Store Connect.
 
