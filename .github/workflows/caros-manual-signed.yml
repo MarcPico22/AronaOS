@@ -19,7 +19,7 @@ jobs:
       - name: Checkout reviewed CarOs prototype branch
         uses: actions/checkout@v4
         with:
-          ref: 1c1a08628b1e42e37b68fe16a116ac73d4d61b60
+          ref: e3be1b5f0dba361d84aca842ad9dc249a8462f62
           persist-credentials: false
 
       - name: Print reviewed source commit and check safety invariants
