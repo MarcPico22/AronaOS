@@ -3,6 +3,8 @@
 // on a supported receiver and Apple's parked-only restrictions.
 import Foundation
 import AVFoundation
+import UIKit
+import MediaPlayer
 
 struct CarOsVideo: Codable, Equatable {
   var id: UUID
@@ -61,15 +63,51 @@ enum CarOsVideoLibrary {
 final class CarOsVideoPlayback {
   static let shared = CarOsVideoPlayback()
   private(set) var player: AVPlayer?
+  private let outputLayer = AVPlayerLayer()
 
-  private init() {}
+  private init() {
+    // The same playback transport is used by iPhone and CarPlay.
+    // Do not use spokenAudio mode, which is unsuitable for video routing.
+    let remote = MPRemoteCommandCenter.shared()
+    remote.playCommand.addTarget { [weak self] _ in
+      self?.player?.play()
+      return .success
+    }
+    remote.pauseCommand.addTarget { [weak self] _ in
+      self?.player?.pause()
+      return .success
+    }
+  }
+
+  func attachVideoOutput(to view: UIView) {
+    // The app's phone window owns a real AVPlayerLayer. AirPlay needs a
+    // render/output pipeline; this layer never draws on the car screen.
+    if outputLayer.superlayer !== view.layer {
+      outputLayer.removeFromSuperlayer()
+      view.layer.insertSublayer(outputLayer, at: 0)
+    }
+    outputLayer.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
+    outputLayer.videoGravity = .resizeAspect
+  }
 
   func play(_ video: CarOsVideo) -> Bool {
     guard let url = video.mediaURL else { return false }
+    do {
+      try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+      try AVAudioSession.sharedInstance().setActive(true)
+    } catch {
+      // Playback may still succeed; report that the audio route is uncertain.
+      Log.write("CarOs AVAudioSession unavailable: \\(error.localizedDescription)")
+    }
     let next = AVPlayer(url: url)
     next.allowsExternalPlayback = true
     player?.pause()
     player = next
+    outputLayer.player = next
+    MPNowPlayingInfoCenter.default().nowPlayingInfo = [
+      MPMediaItemPropertyTitle: video.title,
+      MPMediaItemPropertyMediaType: MPMediaType.anyVideo.rawValue
+    ]
     next.play()
     return true
   }
@@ -77,5 +115,7 @@ final class CarOsVideoPlayback {
   func stop() {
     player?.pause()
     player = nil
+    outputLayer.player = nil
+    MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
   }
 }
