@@ -58,7 +58,7 @@
 			</array>
 			<!-- Official CarPlay template scene. Only iOS/vehicle-authorized
 			     video apps appear on supported car displays. -->
-			<key>UIWindowSceneSessionRoleCarPlay</key>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
 			<array>
 				<dict>
 					<key>UISceneConfigurationName</key>
