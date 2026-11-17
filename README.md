@@ -1,46 +1,56 @@
-# AronaOS — experimental iOS / CarPlay video
+# CarOs — Escritorio iPhone + exploración oficial CarPlay Video (experimental)
 
-Independent research project for a SEAT Arona 2021-ish (infotainment `575035816A / H40 / 0517`) and iPhone previously reported on iOS 26.4. Wired and wireless CarPlay confirmed; **video support unverified**.
+Aplicación iOS personalizable para iPhone con una segunda experiencia opcional de vídeo en CarPlay. Proyecto privado de investigación del propietario de un SEAT Arona 2021 (unidad infotainment `575035816A`, hardware H40, software 0517). **No está demostrado que este modelo de coche admita CarPlay Video.**
 
-### What changed after the Apple approval email
+## Escritorio iPhone — implementado
 
-The developer has reported that Apple granted the **CarPlay Video App** entitlement to their account. The repo now contains only `com.apple.developer.carplay-video` — **not** CarPlay Audio. Since iOS 26.3, Apple says these categories cannot be combined in the same app. The entitlement remains **disabled by default** in `Signing.xcconfig` until the explicit App ID and a new provisioning profile are configured.
+En iPhone, CarOs abre una cuadrícula de accesos predeterminados: YouTube, TikTok, Movistar Plus+, ChatGPT y navegador web.
 
-**Read [the Apple Video setup checklist](docs/APPLE_VIDEO_APPROVAL.md) before attempting to sign.**
+- Añadir, editar y borrar accesos HTTP(S) propios.
+- Personalizar el icono (SF Symbols) y el color general del escritorio (Noche, Océano, Bosque, Grafito).
+- Mover accesos antes/después con una pulsación prolongada.
+- Elegir abrir en navegador web integrado o usar enlaces universales en apps de iPhone cuando el proveedor los admita.
+- Restablecer el escritorio inicial y guardar orden, iconos, color y accesos en `UserDefaults`.
+- No necesita cuenta, Supabase, Vercel, pagos ni backend; no instala ni ejecuta otras apps *dentro* de CarOs.
 
-## CarOs: escritorio personalizable en el iPhone
+## Vídeos directos y AirPlay — implementado a nivel de código, QA pendiente
 
-El objetivo real de CarOs es un lanzador multimedia configurable. En la rama experimental se ha añadido **una pantalla de inicio nativa de iPhone** con iconos de YouTube, TikTok, Movistar Plus+, ChatGPT y Navegador.
+En **Vídeos** del iPhone, añadir, editar, reproducir o eliminar vídeos propios con URL directa HTTPS terminada en `.mp4`, `.mov` o `.m3u8`. La pantalla de reproducción usa `AVPlayerViewController`, `AVPlayer.allowsExternalPlayback = true` y el selector nativo `AVRoutePickerView` para elegir salida compatible.
 
-- Mantén pulsado un icono para **editar**, **mover antes/después**, **abrir dentro/fuera de CarOs** o **eliminar**.
-- Pulsa **+ / Añadir** para guardar un acceso propio con nombre y URL HTTP(S).
-- El orden y los accesos se guardan localmente con UserDefaults; no requieren servidor, suscripción ni cuenta.
-- YouTube/Navegador se abren dentro del navegador de CarOs. TikTok, ChatGPT y Movistar Plus+ se abren fuera de la app de forma predeterminada, porque su experiencia de iPhone, identificación y contenido protegido pueden no funcionar en WKWebView. El acceso externo puede activar enlaces universales si el proveedor los admite.
-- **No se instalan apps de terceros dentro de CarOs.** Son accesos directos, no una copia de Android ni un sistema operativo de coche.
-- **La pantalla nativa de iPhone NO sustituye el Home de CarPlay ni aparece automáticamente en el SEAT.** Apple controla las pantallas CarPlay mediante el framework y plantillas. La ventana de coche heredada de Cafari Lite sigue siendo experimental. Es necesario diseñar una navegación CarPlay nativa de vídeo con la API oficial, usar AirPlay para reproducción compatible y certificar soporte por modelo.
-- **Movistar Plus+ no garantiza reproducción en el coche**: Movistar requiere su app oficial en iPhone/iPad y aplica derechos y restricciones de reproducción/dispositivos.
-- El workflow manual de firma en `main` está fijado a un commit anterior (`70eb234`) por seguridad. **No firmar ni subir automáticamente esta nueva funcionalidad** hasta pasar pruebas y actualizar deliberadamente ese pin.
+Esto **no** reproduce por arte de magia un enlace web de YouTube/TikTok/Movistar Plus+ ni elude DRM, suscripciones o protecciones de contenidos. No recopila claves ni contraseñas.
 
-Esto no modifica la pantalla o el firmware del coche, ni elude el bloqueo de vídeo en movimiento.
+## CarPlay — ruta oficial de Apple; compatibilidad física pendiente
 
-### Compatibility blockers
+El antiguo `UIWindowScene` personalizado de Cafari Lite se ha reemplazado por la API oficial:
 
-- Apple's **official CarPlay video apps were introduced in iOS 27**. Update the test iPhone to iOS 27+ before official tests, with an appropriate Xcode/iOS SDK.
-- Video-only apps are **hidden on cars that lack the video feature**. We have not confirmed SEAT Arona 2021 support; account entitlement approval alone does not enable it.
-- This branch adapts MIT-licensed [Cafari Lite](https://github.com/rPlayAI/cafari-lite) at upstream `fed8f84b6ab1e254a1fd8d59b144cb71d0f9798f`, Copyright (c) 2026 rPlay AI. See LICENSE. The existing UIKit/WKWebView car scene is **experimental**, not the final supported iOS 27 CarPlay video application. Apple's official path uses CarPlay framework and AirPlay-compatible video.
-- The experimental CoreLocation motion gate is fail-closed on missing/invalid GPS, but GPS speed zero **cannot certify the car is parked**. Do not operate in-car video without trusted Apple/vehicle parked-state enforcement. Do not defeat the car's safety mechanisms.
+- `CPTemplateApplicationScene` con `CPTemplateApplicationSceneDelegate` y su rol correcto en `Info.plist`.
+- `CPGridTemplate` para la entrada a **Mis vídeos** y a **Compatibilidad**.
+- `CPListTemplate` para explorar los vídeos directos gestionados desde el iPhone.
+- `CPSessionConfiguration.supportsVideoPlayback` (iOS 27+) para comprobar si el coche anuncia la capacidad de vídeo; no se falsea.
+- `AVPlayer` preparado para salida externa/AirPlay; **falta certificar** en un CarPlay compatible que el audio y vídeo se enrutan y se presentan de forma correcta. No se declara reproducción real exitosa.
+- Solo `com.apple.developer.carplay-video`, sin permiso de CarPlay Audio.
+- Apple/vehículo son responsables del estado que permite mostrar vídeo únicamente estacionado; **no hay simulador de marcha Parking ni bypass**. La velocidad GPS no se usa como prueba de estacionamiento en la nueva escena.
 
-### Code and tests
+**Limitaciones explícitas**: Apple no deja sustituir la pantalla de inicio del vehículo ni ejecutar cualquier app de iPhone desde una app CarPlay. Los iconos de webs, IA, TikTok y Movistar Plus+ son accesos **en el iPhone**, no apps ejecutables en la pantalla del SEAT. Un vehículo sin CarPlay Video puede ocultar CarOs por completo. Si el receptor no admite la ruta AirPlay de vídeo, instalar y firmar la IPA no lo cambia.
 
-- `CafariLite/`: native Swift experimental baseline, builds for iPhone.
-- `web/index.html`: AronaOS design concept running in a **normal browser**, not in CarPlay.
-- `CarPlay.entitlements`: video-only permission; requires valid Apple-approved App ID and provisioning.
-- `scripts/check_source.py`: static safety and entitlement assertions.
-- `docs/TEST_PLAN.md`: remaining QA gates.
+## Estado de publicación
 
-Unsigned smoke build on a compatible macOS/Xcode environment:
-```sh
-xcodebuild -project CafariLite.xcodeproj -scheme CafariLite -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
-```
+- PR de trabajo: [#1](https://github.com/MarcPico22/AronaOS/pull/1) (Draft).
+- CI: `.github/workflows/unsigned-build.yml` compila en Xcode 27 con pruebas estáticas.
+- Firma: `main` incluye un workflow **manual** de archivo IPA App Store firmado. Solo usa GitHub Actions Secrets y está fijado a un commit auditado. **No sube automáticamente a TestFlight ni publica en App Store**.
+- El usuario tiene autorizado el CarPlay Video App entitlement según el correo de Apple y ha generado el perfil de distribución para `com.marcpico.aronaos`. La comprobación local del P12/perfil dio todos los resultados esperados.
+- Ningún secreto, P12, perfil de provisión ni contraseña debe entrar al repositorio público.
+- Aún faltan pruebas en CarPlay Simulator con vídeo habilitado, QA de iPhone/TestFlight, compatibilidad del Arona, pruebas de ruta AirPlay y conformidad con App Review.
 
-A successful compile is **not** a signed install, a vehicle test, or proof of video playback compatibility. No ECU/firmware changes, jailbreak, live payments or secrets.
+Consulta [plan de pruebas](docs/PRUEBAS_CAROS.md) y [guía de firma en Windows](docs/SIGNED_IPA_WINDOWS.md).
+
+## Origen
+
+Derivado del proyecto MIT [Cafari Lite](https://github.com/rPlayAI/cafari-lite) (rPlay AI). Se conserva `LICENSE` y el código original no utilizado se mantiene como referencia experimental, no como interfaz CarPlay oficial. No se altera firmware del coche, ECU ni CarPlay original.
+
+## Referencias oficiales
+
+- https://developer.apple.com/videos/play/wwdc2026/212/
+- https://developer.apple.com/documentation/carplay/cptemplateapplicationscene
+- https://developer.apple.com/documentation/carplay/cpsessionconfiguration/supportsvideoplayback
+- https://developer.apple.com/carplay/
