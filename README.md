@@ -8,6 +8,21 @@ The developer has reported that Apple granted the **CarPlay Video App** entitlem
 
 **Read [the Apple Video setup checklist](docs/APPLE_VIDEO_APPROVAL.md) before attempting to sign.**
 
+## CarOs: escritorio personalizable en el iPhone
+
+El objetivo real de CarOs es un lanzador multimedia configurable. En la rama experimental se ha añadido **una pantalla de inicio nativa de iPhone** con iconos de YouTube, TikTok, Movistar Plus+, ChatGPT y Navegador.
+
+- Mantén pulsado un icono para **editar**, **mover antes/después**, **abrir dentro/fuera de CarOs** o **eliminar**.
+- Pulsa **+ / Añadir** para guardar un acceso propio con nombre y URL HTTP(S).
+- El orden y los accesos se guardan localmente con UserDefaults; no requieren servidor, suscripción ni cuenta.
+- YouTube/Navegador se abren dentro del navegador de CarOs. TikTok, ChatGPT y Movistar Plus+ se abren fuera de la app de forma predeterminada, porque su experiencia de iPhone, identificación y contenido protegido pueden no funcionar en WKWebView. El acceso externo puede activar enlaces universales si el proveedor los admite.
+- **No se instalan apps de terceros dentro de CarOs.** Son accesos directos, no una copia de Android ni un sistema operativo de coche.
+- **La pantalla nativa de iPhone NO sustituye el Home de CarPlay ni aparece automáticamente en el SEAT.** Apple controla las pantallas CarPlay mediante el framework y plantillas. La ventana de coche heredada de Cafari Lite sigue siendo experimental. Es necesario diseñar una navegación CarPlay nativa de vídeo con la API oficial, usar AirPlay para reproducción compatible y certificar soporte por modelo.
+- **Movistar Plus+ no garantiza reproducción en el coche**: Movistar requiere su app oficial en iPhone/iPad y aplica derechos y restricciones de reproducción/dispositivos.
+- El workflow manual de firma en `main` está fijado a un commit anterior (`70eb234`) por seguridad. **No firmar ni subir automáticamente esta nueva funcionalidad** hasta pasar pruebas y actualizar deliberadamente ese pin.
+
+Esto no modifica la pantalla o el firmware del coche, ni elude el bloqueo de vídeo en movimiento.
+
 ### Compatibility blockers
 
 - Apple's **official CarPlay video apps were introduced in iOS 27**. Update the test iPhone to iOS 27+ before official tests, with an appropriate Xcode/iOS SDK.
