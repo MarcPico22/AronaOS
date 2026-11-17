@@ -1,23 +1,24 @@
-# Test plan — AronaOS prototype
+# AronaOS verification checklist
 
-## Repository / CI
-- [ ] Static invariants pass.
-- [ ] Unsigned Xcode simulator-target **compiles** on macOS; compilation does not make car scene work.
-- [ ] No developer secrets or profiles committed.
-- [ ] Review MIT attribution and app privacy behaviours.
+## Account and provisioning
+- [x] Developer reports CarPlay Video approval email.
+- [x] Repo's CarPlay entitlement file is **Video only**; signing disabled by default.
+- [ ] Enable the video capability on an explicit App ID in Apple Developer and save.
+- [ ] Generate fresh matching development provisioning profile.
+- [ ] Configure local Bundle ID / Team ID and sign a real iPhone build on macOS.
+- [ ] Check signed entitlements include Video ONLY (no Audio).
 
-## Phone-only
-- [ ] Sign with own bundle ID and Apple team using macOS Xcode.
-- [ ] Install and launch on iPhone without CarPlay entitlements.
-- [ ] Phone web view opens; no promise of car display.
+## Compatibility
+- [ ] Test iPhone updated from iOS 26.4 to **iOS 27+**.
+- [ ] Verify official CarPlay video UI implementation with iOS 27 SDK.
+- [ ] Confirm CarPlay Video support on a compatible vehicle/simulator.
+- [ ] Confirm **this specific SEAT Arona** supports video; if not, the video-only app is hidden.
 
-## CarPlay (BLOCKED until approved)
-- [ ] Apple explicitly approves video/audio entitlements needed by architecture.
-- [ ] Signed build contains only Apple-approved entitlements; profile matches.
-- [ ] Vehicle reports support for CarPlay video and safely parked operation.
-- [ ] Denied GPS, stale fixes, low quality fixes, motion and GPS loss all keep car content blocked.
-- [ ] No bypass for safety / app policy / parked detection.
-- [ ] Video absent while vehicle moving or parked-state cannot be verified by trusted vehicle/OS.
-- [ ] No test while driving on public roads.
+## Safety and QA
+- [ ] Static checks + unsigned simulator-target build pass at latest commit.
+- [ ] No signed profile, certs, private keys in public GitHub.
+- [ ] Replace legacy experimental car-side WKWebView with official CarPlay framework video flow.
+- [ ] Trust the OS/vehicle's parked-state enforcement; GPS zero is insufficient.
+- [ ] No testing video while vehicle moving; no firmware/ECU alterations.
 
-**Critical limitation:** phone GPS being stationary is not proof of parking; a stopped vehicle at a red light must not make video available. Until trusted OS/vehicle gating is confirmed, any prototype car-window video should not be treated as safe for road use.
+*Approval is account-level, not proof of App ID configuration or hardware compatibility.*
