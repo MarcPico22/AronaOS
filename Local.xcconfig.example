@@ -1,6 +1,7 @@
-// Copy to Local.xcconfig and edit. Never committed.
-CAFARI_LITE_BUNDLE_ID = com.yourname.cafarilite
-CAFARI_LITE_TEAM = ABCDE12345
+// Copy to Local.xcconfig (git-ignored); use your actual team and bundle ID.
+CAFARI_LITE_BUNDLE_ID = com.example.aronaos
+CAFARI_LITE_TEAM = YOURTEAMID
 
-// Only once Apple has granted your account the CarPlay entitlements:
+// ONLY after assigning CarPlay Video to this App ID and regenerating its
+// provisioning profile, uncomment this one-video-only entitlement:
 // CAFARI_LITE_ENTITLEMENTS = CarPlay.entitlements
