@@ -20,7 +20,7 @@ assert "\nCAFARI_LITE_ENTITLEMENTS =\n" in signing, "Entitlements must be off by
 with Path("Info.plist").open("rb") as file:
     info = plistlib.load(file)
 assert info["CFBundleDisplayName"] == "CarOs"
-config = info["UIApplicationSceneManifest"]["UISceneConfigurations"]["UIWindowSceneSessionRoleCarPlay"][0]
+config = info["UIApplicationSceneManifest"]["UISceneConfigurations"]["CPTemplateApplicationSceneSessionRoleApplication"][0]
 assert config["UISceneClassName"] == "CPTemplateApplicationScene", "No custom car UIKit window"
 assert config["UISceneDelegateClassName"].endswith(".CarPlaySceneDelegate")
 
