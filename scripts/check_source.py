@@ -44,4 +44,8 @@ assert "CarOsVideoPlayback.shared.attachVideoOutput" in dashboard
 assert "caros.shortcuts.v1" in dashboard and "caros.theme.v1" in dashboard
 assert "showCarPlayInformation" in browser and '#selector(sendToCar)' not in browser
 assert Path("CafariLite.xcodeproj/project.pbxproj").read_text().count("IPHONEOS_DEPLOYMENT_TARGET = 27.0;") == 2
+# App Store Connect requires a properly configured AppIcon catalog.
+assert Path("CafariLite/Assets.xcassets/AppIcon.appiconset/Contents.json").exists()
+assert "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;" in Path("CafariLite.xcodeproj/project.pbxproj").read_text()
+assert "hasAlpha: false" in Path("scripts/generate_app_icon.swift").read_text()
 print("CarOs checks passed: official CarPlay templates, video-only capability, HTTPS media links and local dashboard.")
