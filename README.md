@@ -15,7 +15,7 @@ En iPhone, CarOs abre una cuadrícula de accesos predeterminados: YouTube, TikTo
 
 ## Vídeos directos y AirPlay — implementado a nivel de código, QA pendiente
 
-En **Vídeos** del iPhone, añadir, editar, reproducir o eliminar vídeos propios con URL directa HTTPS terminada en `.mp4`, `.mov` o `.m3u8`. La pantalla de reproducción usa `AVPlayerViewController`, `AVPlayer.allowsExternalPlayback = true` y el selector nativo `AVRoutePickerView` para elegir salida compatible.
+En **Vídeos** del iPhone, la primera apertura incluye un ejemplo HLS público de Apple para pruebas (se puede eliminar). También puedes añadir, editar, reproducir o eliminar vídeos propios con URL directa HTTPS terminada en `.mp4`, `.mov` o `.m3u8`. La pantalla de reproducción usa `AVPlayerViewController`, `AVPlayer.allowsExternalPlayback = true` y el selector nativo `AVRoutePickerView` para elegir salida compatible.
 
 Esto **no** reproduce por arte de magia un enlace web de YouTube/TikTok/Movistar Plus+ ni elude DRM, suscripciones o protecciones de contenidos. No recopila claves ni contraseñas.
 
