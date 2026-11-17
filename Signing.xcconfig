@@ -1,6 +1,6 @@
 // Default remains phone-only until matching App ID and profile are configured.
 // Local.xcconfig is git-ignored and can override these values.
-CAFARI_LITE_BUNDLE_ID = com.example.aronaos
+CAFARI_LITE_BUNDLE_ID = com.marcpico.aronaos
 CAFARI_LITE_TEAM =
 
 // Once Apple Developer App ID has CarPlay Video enabled and a matching
