@@ -204,6 +204,9 @@ final class CarOsDashboardViewController: UIViewController,
       actions.append(UIAction(title: "Editar", image: UIImage(systemName: "pencil")) { [weak self] _ in
         self?.presentEditor(index: index)
       })
+      actions.append(UIAction(title: "Cambiar icono", image: UIImage(systemName: "square.grid.2x2")) { [weak self] _ in
+        self?.presentIconPicker(index: index)
+      })
       if index > 0 {
         actions.append(UIAction(title: "Mover antes", image: UIImage(systemName: "arrow.left")) { [weak self] _ in
           guard let self = self, index < self.shortcuts.count else { return }
@@ -233,6 +236,39 @@ final class CarOsDashboardViewController: UIViewController,
       })
       return UIMenu(children: actions)
     }
+  }
+
+  private func presentIconPicker(index: Int) {
+    guard index < shortcuts.count else { return }
+    let alert = UIAlertController(title: "Icono de " + shortcuts[index].title,
+                                  message: "Elige el aspecto del acceso en tu iPhone.",
+                                  preferredStyle: .actionSheet)
+    let symbols: [(String, String)] = [
+      ("Vídeo", "play.rectangle.fill"),
+      ("Música", "music.note"),
+      ("Televisión", "tv.fill"),
+      ("IA", "sparkles"),
+      ("Internet", "globe"),
+      ("Mensajes", "message.fill"),
+      ("Fotos", "photo.fill"),
+      ("Juego", "gamecontroller.fill"),
+      ("Favorito", "star.fill"),
+      ("Coche", "car.fill")
+    ]
+    for (label, symbol) in symbols {
+      alert.addAction(UIAlertAction(title: label, style: .default) { [weak self] _ in
+        guard let self = self, index < self.shortcuts.count else { return }
+        self.shortcuts[index].symbol = symbol
+        self.saveAndRefresh()
+      })
+    }
+    alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+    if let popover = alert.popoverPresentationController {
+      popover.sourceView = view
+      popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY,
+                                 width: 1, height: 1)
+    }
+    present(alert, animated: true)
   }
 
   @objc private func addShortcut() { presentEditor(index: nil) }
