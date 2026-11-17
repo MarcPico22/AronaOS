@@ -14,9 +14,9 @@ jobs:
       - name: Safety invariants
         run: python3 scripts/check_source.py
   ios-compile:
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
-      - name: Build unsigned iOS Simulator target
+      - name: Build unsigned iOS 27 Simulator target
         run: |
           xcodebuild -project CafariLite.xcodeproj -scheme CafariLite -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
