@@ -56,17 +56,15 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 				</dict>
 			</array>
-			<!-- The car screen. A plain UIWindowScene, not a CarPlay template
-			     scene: that is what lets a web view draw on the head unit.
-			     iOS only ever creates this scene for a build signed with the
-			     CarPlay video entitlement. -->
+			<!-- Official CarPlay template scene. Only iOS/vehicle-authorized
+			     video apps appear on supported car displays. -->
 			<key>UIWindowSceneSessionRoleCarPlay</key>
 			<array>
 				<dict>
 					<key>UISceneConfigurationName</key>
 					<string>CarPlay</string>
 					<key>UISceneClassName</key>
-					<string>UIWindowScene</string>
+					<string>CPTemplateApplicationScene</string>
 					<key>UISceneDelegateClassName</key>
 					<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
 				</dict>
