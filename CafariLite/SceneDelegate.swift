@@ -22,7 +22,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       return
     }
     let window = UIWindow(windowScene: windowScene)
-    window.rootViewController = BrowserViewController(showsStatus: true)
+    window.rootViewController = UINavigationController(rootViewController: CarOsDashboardViewController())
     window.makeKeyAndVisible()
     self.window = window
     Log.write("phone window up \(window.bounds.size) key=\(window.isKeyWindow)")
