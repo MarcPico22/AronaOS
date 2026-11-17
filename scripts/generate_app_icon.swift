@@ -3,12 +3,14 @@ import Foundation
 
 // Original CarOs icon. Runs on the macOS Xcode runner before building.
 // Intentionally exports opaque RGB PNG (Apple App Store requires no alpha).
+// Render in RGBA (supported by headless macOS NSGraphicsContext) and convert
+// through JPEG to remove the alpha channel before writing the final PNG.
 let dimension = 1024
 guard let bitmap = NSBitmapImageRep(
   bitmapDataPlanes: nil, pixelsWide: dimension, pixelsHigh: dimension,
-  bitsPerSample: 8, samplesPerPixel: 3, hasAlpha: false,
+  bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
   isPlanar: false, colorSpaceName: .deviceRGB,
-  bytesPerRow: 0, bitsPerPixel: 0
+  bytesPerRow: 4096, bitsPerPixel: 32
 ), let graphics = NSGraphicsContext(bitmapImageRep: bitmap) else {
   fatalError("Cannot create RGB icon bitmap")
 }
@@ -65,8 +67,10 @@ NSGraphicsContext.restoreGraphicsState()
 let file = URL(fileURLWithPath: "CafariLite/Assets.xcassets/AppIcon.appiconset/AppIcon.png")
 try FileManager.default.createDirectory(at: file.deletingLastPathComponent(),
                                         withIntermediateDirectories: true)
-guard let png = bitmap.representation(using: .png, properties: [:]) else {
-  fatalError("Could not encode AppIcon.png")
+guard let flattened = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.99]),
+      let opaque = NSBitmapImageRep(data: flattened),
+      let png = opaque.representation(using: .png, properties: [:]) else {
+  fatalError("Could not encode opaque AppIcon.png")
 }
 try png.write(to: file, options: .atomic)
 print("Generated opaque RGB CarOs AppIcon.png (1024 x 1024)")
