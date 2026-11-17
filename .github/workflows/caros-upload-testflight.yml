@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           # Pinned; do not use mutable PR HEAD while secrets are available.
-          ref: e3be1b5f0dba361d84aca842ad9dc249a8462f62
+          ref: 04767dc3b834bcf0915b4108ef4359ca57c8561c
           persist-credentials: false
 
       - name: Validate CarOs safety invariants
