@@ -30,13 +30,18 @@ assert "supportsVideoPlayback" in car and "#available(iOS 27.0" in car
 assert "UIWindow(" not in car and "WKWebView(" not in car, "No custom car overlays"
 assert "CarOsVideoLibrary.items" in car
 assert "CarOsVideoPlayback.shared.play" in car
+assert "CPPlaybackConfiguration(" in car and "preferredPresentation: .video" in car
 assert "CarOsVideoPlayback.shared.stop" in car
 assert "AVRoutePickerView" in player_ui and "AVPlayerViewController" in player_ui
 assert "components.scheme?.lowercased() == \"https\"" in library
 assert 'path.hasSuffix(".m3u8")' in library and 'path.hasSuffix(".mp4")' in library
 assert "allowsExternalPlayback = true" in library
+assert "AVPlayerLayer()" in library and "mode: .moviePlayback" in library
+assert "MPNowPlayingInfoCenter" in library
 assert "CarOsDashboardViewController" in (source / "SceneDelegate.swift").read_text()
 assert "CarOsVideoLibraryViewController" in dashboard
+assert "CarOsVideoPlayback.shared.attachVideoOutput" in dashboard
 assert "caros.shortcuts.v1" in dashboard and "caros.theme.v1" in dashboard
 assert "showCarPlayInformation" in browser and '#selector(sendToCar)' not in browser
+assert Path("CafariLite.xcodeproj/project.pbxproj").read_text().count("IPHONEOS_DEPLOYMENT_TARGET = 27.0;") == 2
 print("CarOs checks passed: official CarPlay templates, video-only capability, HTTPS media links and local dashboard.")
