@@ -82,6 +82,8 @@ assert carplay_keys == ["com.apple.developer.carplay-video"]
 assert data["com.apple.developer.carplay-video"] is True
 PY
 
+# App Store Connect requires an opaque 1024px icon inside the signed app.
+swift scripts/generate_app_icon.swift
 archive="$RUNNER_TEMP/CarOs.xcarchive"
 mkdir -p "$GITHUB_WORKSPACE/build/signed-export"
 xcodebuild archive \
