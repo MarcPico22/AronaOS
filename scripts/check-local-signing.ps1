@@ -24,7 +24,7 @@ $profileThumbprints = @()
 if ($developerCertificates) {
     foreach ($node in $developerCertificates.SelectNodes('data')) {
         $base64 = $node.InnerText -replace '\s', ''
-        $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList (,[Convert]::FromBase64String($base64))
+        $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new([Convert]::FromBase64String($base64))
         $profileThumbprints += $certificate.Thumbprint
     }
 }
