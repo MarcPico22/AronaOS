@@ -1,29 +1,31 @@
-# AronaOS — experimental iOS / CarPlay multimedia
+# AronaOS — experimental iOS / CarPlay video
 
-**Status: development only — NOT verified on the SEAT display.** Separate project for a SEAT Arona (approx. 2021), infotainment **575035816A / H40 / 0517**, iPhone iOS 26.4.
+Independent research project for a SEAT Arona 2021-ish (infotainment `575035816A / H40 / 0517`) and iPhone previously reported on iOS 26.4. Wired and wireless CarPlay confirmed; **video support unverified**.
 
-This branch incorporates a minimal, MIT-licensed [Cafari Lite](https://github.com/rPlayAI/cafari-lite) codebase (original commit `fed8f84b6ab1e254a1fd8d59b144cb71d0f9798f`, Copyright © 2026 rPlay AI) with a **fail-closed experimental motion gate**. See LICENSE. The source is an upstream adaptation, **not** an official Apple or SEAT product.
+### What changed after the Apple approval email
 
-## Safety and limitations
-- The car-side web view starts blank and blocks content until **3 recent GPS fixes indicate near-zero speed**. Denied/old/invalid GPS or movement blocks it immediately, and there is **no switch to disable this gate**. CarPlay/SEAT OS safeguards must also remain intact.
-- **GPS speed does not prove the vehicle is parked.** It might allow video at a traffic stop. This is **not a certified parking detector**; do not rely on it for road use. For real usage, video must be governed by a trusted parked-state restriction from Apple/the vehicle. Test only while safely parked.
-- Apple Developer membership does not automatically grant **CarPlay Video** (or CarPlay Audio). Both may be needed by this upstream architecture, subject to Apple's approval. Leave signing entitlements **off** until authorised.
-- CarPlay video support on this SEAT system has **not** been confirmed. No ECU, firmware, root or jailbreak modifications are used.
+The developer has reported that Apple granted the **CarPlay Video App** entitlement to their account. The repo now contains only `com.apple.developer.carplay-video` — **not** CarPlay Audio. Since iOS 26.3, Apple says these categories cannot be combined in the same app. The entitlement remains **disabled by default** in `Signing.xcconfig` until the explicit App ID and a new provisioning profile are configured.
 
-## Local development
-- Windows: open `web/index.html` to preview the **independent web mock-up**, not the CarPlay app.
-- macOS/Xcode required for native build:
-  ```sh
-  cp Local.xcconfig.example Local.xcconfig
-  # Set your bundle ID and TEAM in Local.xcconfig (keep entitlements empty).
-  xcodebuild -project CafariLite.xcodeproj -scheme CafariLite -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
-  ```
-  iPhone install and signing: `tools/run-on-device.sh` on macOS, only after configuring your own signing. It is **phone-only until Apple approves entitlements**.
-- Do not commit Apple credentials, provisioning profiles, signing keys or personal identifiers.
+**Read [the Apple Video setup checklist](docs/APPLE_VIDEO_APPROVAL.md) before attempting to sign.**
 
-## Roadmap
-1. Verify unsigned simulator compilation with CI (does not prove CarPlay compatibility).
-2. Review the parked gate and its limits, test phone-only UI.
-3. If Apple grants permissions, validate the signed entitlements and compatible head-unit behaviour *while parked only*.
-4. Replace experimental GPS gate with a verifiable parked-state signal or restrict car video pending support.
-5. Design AronaOS home interface, browser, music and assistant, without enabling unsafe video on the road.
+### Compatibility blockers
+
+- Apple's **official CarPlay video apps were introduced in iOS 27**. Update the test iPhone to iOS 27+ before official tests, with an appropriate Xcode/iOS SDK.
+- Video-only apps are **hidden on cars that lack the video feature**. We have not confirmed SEAT Arona 2021 support; account entitlement approval alone does not enable it.
+- This branch adapts MIT-licensed [Cafari Lite](https://github.com/rPlayAI/cafari-lite) at upstream `fed8f84b6ab1e254a1fd8d59b144cb71d0f9798f`, Copyright (c) 2026 rPlay AI. See LICENSE. The existing UIKit/WKWebView car scene is **experimental**, not the final supported iOS 27 CarPlay video application. Apple's official path uses CarPlay framework and AirPlay-compatible video.
+- The experimental CoreLocation motion gate is fail-closed on missing/invalid GPS, but GPS speed zero **cannot certify the car is parked**. Do not operate in-car video without trusted Apple/vehicle parked-state enforcement. Do not defeat the car's safety mechanisms.
+
+### Code and tests
+
+- `CafariLite/`: native Swift experimental baseline, builds for iPhone.
+- `web/index.html`: AronaOS design concept running in a **normal browser**, not in CarPlay.
+- `CarPlay.entitlements`: video-only permission; requires valid Apple-approved App ID and provisioning.
+- `scripts/check_source.py`: static safety and entitlement assertions.
+- `docs/TEST_PLAN.md`: remaining QA gates.
+
+Unsigned smoke build on a compatible macOS/Xcode environment:
+```sh
+xcodebuild -project CafariLite.xcodeproj -scheme CafariLite -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+```
+
+A successful compile is **not** a signed install, a vehicle test, or proof of video playback compatibility. No ECU/firmware changes, jailbreak, live payments or secrets.
